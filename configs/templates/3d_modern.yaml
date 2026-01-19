@@ -1,0 +1,21 @@
+# 3D立体模板 - 现代感
+name: "3D立体"
+description: "3D元素，立体图形，适合科技/产品/创新主题"
+sequence:
+  - title
+  - content
+  - data_dashboard
+  - comparison
+  - conclusion_cta
+narrative: "problem_solution_result"
+suggested_slides: 5
+style_hints:
+  background: "深色渐变、柔和光源"
+  typography: "现代几何字体，立体阴影"
+  colors:
+    - "#6C63FF"
+    - "#FF6584"
+    - "#43E97B"
+    - "#0F0E17"
+  layout: "悬浮卡片、立体层次、透视效果"
+  visual: "3D图形、立体图标、等距插画"

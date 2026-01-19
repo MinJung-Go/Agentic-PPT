@@ -1,0 +1,12 @@
+# 公司介绍模板
+name: "公司介绍"
+description: "适合企业宣传、合作洽谈、招聘宣讲"
+sequence:
+  - title
+  - content
+  - timeline
+  - case_study
+  - data_dashboard
+  - conclusion_cta
+narrative: "story_driven"
+suggested_slides: 6

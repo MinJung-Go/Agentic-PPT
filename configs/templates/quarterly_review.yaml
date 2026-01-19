@@ -1,0 +1,11 @@
+# 季度汇报模板
+name: "季度汇报"
+description: "适合业绩汇报、工作总结、部门复盘"
+sequence:
+  - title
+  - data_dashboard
+  - timeline
+  - comparison
+  - conclusion_cta
+narrative: "problem_solution_result"
+suggested_slides: 5

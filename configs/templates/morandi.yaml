@@ -1,0 +1,21 @@
+# 莫兰迪色模板 - 高级灰调
+name: "莫兰迪色"
+description: "低饱和度高级灰，温柔优雅，适合时尚/艺术/生活方式"
+sequence:
+  - title
+  - content
+  - comparison
+  - content
+  - conclusion_cta
+narrative: "story_driven"
+suggested_slides: 5
+style_hints:
+  background: "灰粉、灰蓝、米灰色"
+  typography: "衬线与无衬线混搭，优雅细腻"
+  colors:
+    - "#B4A7A7"
+    - "#A7B4B4"
+    - "#C4B7A6"
+    - "#A6B4C4"
+  layout: "不对称平衡，艺术感留白"
+  visual: "柔和摄影、抽象色块、线条艺术"

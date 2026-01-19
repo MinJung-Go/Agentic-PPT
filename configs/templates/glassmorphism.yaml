@@ -1,0 +1,21 @@
+# 玻璃拟态模板 - Glassmorphism
+name: "玻璃拟态"
+description: "毛玻璃效果，透明层叠，现代UI风格，适合科技/APP展示"
+sequence:
+  - title
+  - content
+  - data_dashboard
+  - content
+  - conclusion_cta
+narrative: "problem_solution_result"
+suggested_slides: 5
+style_hints:
+  background: "渐变彩色背景，模糊光斑"
+  typography: "现代无衬线，白色或深色文字"
+  colors:
+    - "#667eea"
+    - "#764ba2"
+    - "#f093fb"
+    - "#f5576c"
+  layout: "毛玻璃卡片，圆角，微妙阴影"
+  visual: "3D图标、渐变色块、光晕效果"

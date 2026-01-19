@@ -1,0 +1,21 @@
+# 日系清新模板 - 无印良品风
+name: "日系清新"
+description: "无印良品风格，自然质朴，适合生活/文艺/简约主题"
+sequence:
+  - title
+  - content
+  - content
+  - content
+  - conclusion_cta
+narrative: "story_driven"
+suggested_slides: 5
+style_hints:
+  background: "米白、原木色、极淡灰"
+  typography: "日系细体字，留白呼吸感"
+  colors:
+    - "#F7F5F0"
+    - "#D4C4B0"
+    - "#8B7355"
+    - "#333333"
+  layout: "极简网格，大量留白，自然对齐"
+  visual: "自然材质纹理、简笔插画、无印风产品摄影"

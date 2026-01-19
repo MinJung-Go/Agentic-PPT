@@ -1,0 +1,11 @@
+# 项目提案模板
+name: "项目提案"
+description: "适合项目立项、方案提案、需求评审"
+sequence:
+  - title
+  - problem_solution
+  - timeline
+  - data_dashboard
+  - conclusion_cta
+narrative: "problem_solution_result"
+suggested_slides: 5

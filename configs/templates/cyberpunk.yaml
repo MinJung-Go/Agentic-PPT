@@ -1,0 +1,21 @@
+# 赛博朋克模板 - 未来科技
+name: "赛博朋克"
+description: "霓虹灯效果，暗黑背景，未来科技感，适合科技/游戏主题"
+sequence:
+  - title
+  - content
+  - data_dashboard
+  - timeline
+  - conclusion_cta
+narrative: "problem_solution_result"
+suggested_slides: 5
+style_hints:
+  background: "深紫/深蓝渐变，网格线条"
+  typography: "科技感字体，霓虹发光效果"
+  colors:
+    - "#FF00FF"
+    - "#00FFFF"
+    - "#FF1493"
+    - "#0D0D0D"
+  layout: "斜切分割，故障艺术效果"
+  visual: "霓虹边框、全息效果、数据流动画"

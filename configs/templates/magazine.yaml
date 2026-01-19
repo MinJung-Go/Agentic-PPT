@@ -1,0 +1,21 @@
+# 杂志风模板 - Editorial设计
+name: "杂志风"
+description: "时尚杂志排版，大胆字体，适合时尚/创意/品牌内容"
+sequence:
+  - title
+  - content
+  - content
+  - comparison
+  - conclusion_cta
+narrative: "story_driven"
+suggested_slides: 5
+style_hints:
+  background: "纯色块、撞色拼接"
+  typography: "超大粗体标题，混合字号，文字作为设计元素"
+  colors:
+    - "#000000"
+    - "#FF4500"
+    - "#FFFFFF"
+    - "#FFD700"
+  layout: "打破网格，文字环绕图片，动态构图"
+  visual: "高质量摄影、裁切人像、拼贴效果"

@@ -172,3 +172,12 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Claude Code
+.claude/
+
+# Examples
+examples/
+
+# Internal version (not for public)
+ppt_generator/slide_generator.py

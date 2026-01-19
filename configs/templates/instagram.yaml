@@ -1,0 +1,21 @@
+# INS风模板 - 高级感博主
+name: "INS风"
+description: "Instagram博主风格，高级滤镜感，适合时尚/旅行/生活方式"
+sequence:
+  - title
+  - content
+  - content
+  - content
+  - conclusion_cta
+narrative: "story_driven"
+suggested_slides: 5
+style_hints:
+  background: "米白、暖灰、莫兰迪色调"
+  typography: "极简无衬线英文标题，中文配细体"
+  colors:
+    - "#F5F5F0"
+    - "#C9B8A8"
+    - "#8B7355"
+    - "#2C2C2C"
+  layout: "大面积留白，图片占主导，文字精简"
+  visual: "电影感滤镜照片、胶片颗粒质感、简约线条装饰"

@@ -1,0 +1,21 @@
+# 手绘涂鸦模板 - 创意活泼
+name: "手绘涂鸦"
+description: "手绘风格，趣味涂鸦，适合创意/教育/轻松主题"
+sequence:
+  - title
+  - content
+  - content
+  - content
+  - conclusion_cta
+narrative: "chronological"
+suggested_slides: 5
+style_hints:
+  background: "米黄纸张质感、网格本、便签纸"
+  typography: "手写体、马克笔效果"
+  colors:
+    - "#2C3E50"
+    - "#E74C3C"
+    - "#F39C12"
+    - "#27AE60"
+  layout: "随意贴纸、箭头连接、便签堆叠"
+  visual: "手绘图标、涂鸦插画、荧光笔标注"

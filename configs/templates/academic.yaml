@@ -1,0 +1,12 @@
+# 学术演讲模板
+name: "学术演讲"
+description: "适合学术会议、论文答辩、研究报告"
+sequence:
+  - title
+  - toc
+  - content
+  - data_dashboard
+  - content
+  - conclusion_cta
+narrative: "chronological"
+suggested_slides: 6

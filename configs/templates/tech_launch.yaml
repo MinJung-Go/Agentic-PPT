@@ -1,0 +1,21 @@
+# 科技发布会模板 - 苹果/小米风
+name: "科技发布会"
+description: "苹果/小米发布会风格，产品为王，适合科技产品/功能发布"
+sequence:
+  - title
+  - content
+  - data_dashboard
+  - comparison
+  - conclusion_cta
+narrative: "story_driven"
+suggested_slides: 5
+style_hints:
+  background: "纯黑或深灰渐变，聚光灯效果"
+  typography: "超大加粗标题，数字突出显示，极简正文"
+  colors:
+    - "#000000"
+    - "#1D1D1F"
+    - "#F5F5F7"
+    - "#0071E3"
+  layout: "产品居中，大面积负空间，一页一卖点"
+  visual: "产品渲染图、参数对比、性能图表、光影效果"

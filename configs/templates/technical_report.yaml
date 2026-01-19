@@ -1,0 +1,12 @@
+# 技术报告模板
+name: "技术报告"
+description: "适合技术分享、研究汇报、项目总结"
+sequence:
+  - title
+  - toc
+  - content
+  - data_dashboard
+  - timeline
+  - conclusion_cta
+narrative: "chronological"
+suggested_slides: 6

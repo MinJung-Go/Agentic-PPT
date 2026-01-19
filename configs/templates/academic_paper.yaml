@@ -1,0 +1,23 @@
+# 学术论文风模板 - NotebookLM风格
+name: "学术论文风"
+description: "NotebookLM风格，清爽学术感，公式图表，适合论文解读/技术分享/研究报告"
+sequence:
+  - title
+  - content
+  - content
+  - data_dashboard
+  - content
+  - conclusion_cta
+narrative: "chronological"
+suggested_slides: 6
+style_hints:
+  background: "纯白或极浅灰(#FAFAFA)背景，干净清爽"
+  typography: "标题深蓝色粗体，正文黑色，数学公式LaTeX风格渲染"
+  colors:
+    - "#1A365D"
+    - "#2B6CB0"
+    - "#4A5568"
+    - "#FFFFFF"
+  layout: "左文右图分栏布局，公式居中突出，图表右侧配说明"
+  visual: "3D概念图、流程示意图、数学公式、简洁图表、蓝色渐变装饰线"
+  special: "右下角NotebookLM风格水印，页面简洁留白多"

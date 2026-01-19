@@ -1,0 +1,20 @@
+# 极简高级模板 - Apple风格
+name: "极简高级"
+description: "Apple风格，大量留白，极致简约，高端质感"
+sequence:
+  - title
+  - content
+  - content
+  - content
+  - conclusion_cta
+narrative: "story_driven"
+suggested_slides: 5
+style_hints:
+  background: "纯白或纯黑背景"
+  typography: "超大标题，纤细正文，San Francisco字体风格"
+  colors:
+    - "#000000"
+    - "#FFFFFF"
+    - "#86868B"
+  layout: "居中对称，70%以上留白"
+  visual: "产品大图，无边框，阴影柔和"

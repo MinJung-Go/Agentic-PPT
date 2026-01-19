@@ -1,0 +1,21 @@
+# 小红书风模板 - 种草笔记
+name: "小红书风"
+description: "种草笔记风格，图文并茂，适合产品推荐/生活分享/美妆穿搭"
+sequence:
+  - title
+  - content
+  - content
+  - case_study
+  - conclusion_cta
+narrative: "story_driven"
+suggested_slides: 5
+style_hints:
+  background: "奶白色、浅粉色渐变"
+  typography: "标题可爱圆润，正文清晰易读，适当emoji点缀"
+  colors:
+    - "#FF2442"
+    - "#FFF5F5"
+    - "#333333"
+    - "#FFE4E1"
+  layout: "大图配短文，标签贴纸风格，圆角卡片"
+  visual: "高清产品图、生活场景照、手写标注、爱心收藏图标"

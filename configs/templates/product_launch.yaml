@@ -1,0 +1,11 @@
+# 产品发布模板
+name: "产品发布"
+description: "适合新品发布会、功能演示、产品介绍"
+sequence:
+  - title
+  - content
+  - comparison
+  - case_study
+  - conclusion_cta
+narrative: "story_driven"
+suggested_slides: 5

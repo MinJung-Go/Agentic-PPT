@@ -1,0 +1,21 @@
+# 复古怀旧模板 - Vintage风格
+name: "复古怀旧"
+description: "复古色调，老式排版，适合品牌故事/历史/文艺内容"
+sequence:
+  - title
+  - timeline
+  - content
+  - case_study
+  - conclusion_cta
+narrative: "chronological"
+suggested_slides: 5
+style_hints:
+  background: "泛黄纸张、复古纹理、做旧效果"
+  typography: "复古衬线体、打字机字体"
+  colors:
+    - "#8B4513"
+    - "#DEB887"
+    - "#2F4F4F"
+    - "#CD853F"
+  layout: "边框装饰、徽章标签、对称布局"
+  visual: "老照片效果、复古插画、邮票贴纸"

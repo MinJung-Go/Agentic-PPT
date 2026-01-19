@@ -1,0 +1,11 @@
+# 商业路演模板
+name: "商业路演"
+description: "适合融资演示、产品推介、商业计划书"
+sequence:
+  - title
+  - problem_solution
+  - data_dashboard
+  - case_study
+  - conclusion_cta
+narrative: "problem_solution_result"
+suggested_slides: 5

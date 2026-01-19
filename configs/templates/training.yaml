@@ -1,0 +1,12 @@
+# 培训课程模板
+name: "培训课程"
+description: "适合内部培训、教学演示、知识分享"
+sequence:
+  - title
+  - toc
+  - content
+  - content
+  - content
+  - conclusion_cta
+narrative: "chronological"
+suggested_slides: 6

@@ -1,0 +1,21 @@
+# 可爱少女模板 - 粉嫩甜美
+name: "可爱少女"
+description: "粉嫩甜美风，圆角卡片，可爱插画，适合女性向内容"
+sequence:
+  - title
+  - content
+  - content
+  - case_study
+  - conclusion_cta
+narrative: "story_driven"
+suggested_slides: 5
+style_hints:
+  background: "渐变粉色、薰衣草紫、奶油白"
+  typography: "圆润可爱字体，适度使用emoji"
+  colors:
+    - "#FFB6C1"
+    - "#E6E6FA"
+    - "#FFEFD5"
+    - "#87CEEB"
+  layout: "圆角卡片，气泡对话框，不规则排版"
+  visual: "可爱插画、贴纸风格图标、软萌元素"

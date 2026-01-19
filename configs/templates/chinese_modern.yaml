@@ -1,0 +1,21 @@
+# 新中式模板 - 国潮风格
+name: "新中式"
+description: "国潮风格，传统元素与现代设计融合，适合文化/品牌内容"
+sequence:
+  - title
+  - content
+  - timeline
+  - case_study
+  - conclusion_cta
+narrative: "story_driven"
+suggested_slides: 5
+style_hints:
+  background: "宣纸质感、水墨渐变、朱红点缀"
+  typography: "书法字体标题，现代正文"
+  colors:
+    - "#8B0000"
+    - "#2F4F4F"
+    - "#DAA520"
+    - "#F5F5DC"
+  layout: "留白意境，竖排标题，印章装饰"
+  visual: "水墨插画、传统纹样、云纹边框"
