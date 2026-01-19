@@ -178,6 +178,7 @@ cython_debug/
 
 # Examples
 examples/
+output/
 
 # Internal version (not for public)
 ppt_generator/slide_generator.py
