@@ -38,9 +38,9 @@ class MyApp extends ConsumerWidget {
     final configManager = UserConfigManager();
     final config = configManager.config;
 
-    final themeMode = config.theme == AppTheme.system
+    final themeMode = config.theme.name == 'system'
         ? ThemeMode.system
-        : config.theme == AppTheme.dark
+        : config.theme.name == 'dark'
             ? ThemeMode.dark
             : ThemeMode.light;
 
