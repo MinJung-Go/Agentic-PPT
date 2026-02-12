@@ -43,12 +43,17 @@ jobs:
         working-directory: AI-PPT-Flutter
         run: flutter pub run build_runner build --delete-conflicting-outputs
 
+      - name: Analyze code
+        working-directory: AI-PPT-Flutter
+        run: flutter analyze --fatal-infos
+
       - name: Build APK (Release)
         working-directory: AI-PPT-Flutter
-        run: flutter build apk --release
+        run: flutter build apk --release --verbose
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: app-release
           path: AI-PPT-Flutter/build/app/outputs/flutter-apk/app-release.apk
@@ -56,7 +61,16 @@ jobs:
 
       - name: Get APK info
         working-directory: AI-PPT-Flutter
+        if: success()
         run: |
           APK_SIZE=$(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1)
           echo "APK Size: $APK_SIZE"
           echo "apk_size=$APK_SIZE" >> $GITHUB_OUTPUT
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: AI-PPT-Flutter/build/
+          retention-days: 7
