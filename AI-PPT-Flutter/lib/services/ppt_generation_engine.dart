@@ -3,9 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:logger/logger.dart';
-import '../models/ppt_models.dart';
 import '../models/template_models.dart';
-import 'glm_client.dart';
 import 'document_analyzer.dart';
 import 'outline_generator.dart';
 import 'web_search_engine.dart';
@@ -148,7 +146,7 @@ class PPTGenerationEngine {
     progressHandler?.call(0.05);
 
     // Step 1: Search for content
-    final searchResults = await _webSearchEngine.search(topic);
+    final searchResults = await _webSearchEngine.performSearch(topic: topic);
     _logger.i('Search results: ${searchResults.length} items');
 
     progressHandler?.call(0.15);

@@ -1,6 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:logger/logger.dart';
-import 'glm_client.dart';
 
 part 'document_analyzer.g.dart';
 
@@ -26,9 +25,8 @@ class DocumentAnalysis {
   Map<String, dynamic> toJson() => _$DocumentAnalysisToJson(this);
 }
 
-/// Document analyzer service that uses GLMClient to analyze documents
+/// Document analyzer service
 class DocumentAnalyzer {
-  final GLMClient _glmClient = GLMClient();
   final Logger _logger = Logger();
 
   /// Analyze document structure and content
@@ -37,7 +35,7 @@ class DocumentAnalyzer {
       _logger.i('Analyzing document...');
 
       // For now, return a basic analysis
-      // TODO: Implement proper AI-based analysis using GLMClient
+      // TODO: Implement proper AI-based analysis
       await Future.delayed(const Duration(milliseconds: 500));
 
       return DocumentAnalysis(

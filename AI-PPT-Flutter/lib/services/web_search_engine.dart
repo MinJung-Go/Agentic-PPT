@@ -101,37 +101,4 @@ class WebSearchEngine {
     await Future.delayed(const Duration(milliseconds: 100));
     return '这是从 $url 提取的内容';
   }
-
-  // MARK: - Build Research Report Prompt
-  String _buildResearchReportPrompt(String topic, String content) {
-    return '''
-基于以下搜索结果，生成一份关于"$topic"的专业研报文案。
-
-【搜索结果内容】
-$content
-
-【要求】
-1. 结构清晰：背景、现状、趋势、结论
-2. 数据支撑：引用搜索结果中的关键数据
-3. 专业表达：使用行业术语，避免口语化
-4. 逻辑严密：段落之间有清晰的逻辑关系
-5. 适合 PPT：每段内容可以独立成页
-
-【输出格式】
-直接输出研报文案，不需要额外说明。
-
-【示例结构】
-一、背景介绍
-（200-300字，介绍研究背景和意义）
-
-二、市场现状
-（300-400字，分析当前市场状况）
-
-三、发展趋势
-（300-400字，预测未来发展方向）
-
-四、关键结论
-（200-300字，总结核心观点）
-''';
-  }
 }
