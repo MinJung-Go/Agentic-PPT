@@ -40,8 +40,8 @@ class TemplateState {
 class TemplateNotifier extends StateNotifier<TemplateState> {
   TemplateNotifier() : super(TemplateState(templates: TemplateManager.templates)) {
     // Select first template by default
-    if (templates.isNotEmpty) {
-      state = state.copyWith(selectedTemplate: templates.first);
+    if (TemplateManager.templates.isNotEmpty) {
+      state = state.copyWith(selectedTemplate: TemplateManager.templates.first);
     }
   }
 

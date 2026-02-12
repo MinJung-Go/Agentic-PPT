@@ -27,6 +27,9 @@ dependencies:
   # JSON
   json_annotation: ^4.8.1
 
+  # Logging
+  logger: ^2.0.2+1
+
   # UI Components
   cupertino_icons: ^1.0.6
   google_fonts: ^6.1.0
