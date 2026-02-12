@@ -14,9 +14,7 @@ class GLMClient {
 
   void initialize({required String apiKey, String? baseUrl}) {
     _apiKey = apiKey;
-    if (baseUrl != null) {
-      _baseUrl = baseUrl!;
-    }
+    _baseUrl = baseUrl ?? 'https://open.bigmodel.cn/api/paas/v4';
   }
 
   Future<Map<String, dynamic>> generateOutline({

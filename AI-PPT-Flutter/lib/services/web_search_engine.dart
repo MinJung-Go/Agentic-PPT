@@ -80,8 +80,6 @@ class WebSearchEngine {
 
     // Step 3: Generate research report using GLM
     final combinedContent = contents.join('\n\n---\n\n');
-    final prompt = _buildResearchReportPrompt(topic, combinedContent);
-
     final report = await _glmClient.generateSlideContent(
       title: topic,
       outline: combinedContent,

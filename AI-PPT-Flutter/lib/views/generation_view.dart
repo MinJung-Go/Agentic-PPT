@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/template_models.dart';
 import '../services/ppt_generation_engine.dart';
-import '../services/user_config_manager.dart';
 import 'template_gallery_view.dart';
 
 final generationProvider = StateNotifierProvider<GenerationNotifier, GenerationState>((ref) {
@@ -427,7 +426,7 @@ class _TemplateSelector extends StatelessWidget {
                           ),
                         ],
                       )
-                    : const Center(
+                    : Center(
                         child: Text(
                           '请选择模板',
                           style: TextStyle(color: Colors.grey.shade600),
