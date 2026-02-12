@@ -1,5 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'glm_client.dart';
 
 part 'document_analyzer.g.dart';
 

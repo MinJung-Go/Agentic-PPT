@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/template_models.dart';
 import '../services/ppt_generation_engine.dart';
 import '../services/user_config_manager.dart';
+import 'template_gallery_view.dart';
 
 final generationProvider = StateNotifierProvider<GenerationNotifier, GenerationState>((ref) {
   return GenerationNotifier();
@@ -91,8 +92,6 @@ class GenerationNotifier extends StateNotifier<GenerationState> {
     try {
       final engine = PPTGenerationEngine();
       final outputDir = await PPTGenerationEngine.getOutputDirectory();
-      final configManager = UserConfigManager();
-      final config = configManager.config;
 
       PPTResult result;
 

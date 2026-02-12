@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -47,6 +48,15 @@ class PPTGenerationEngine {
   final WebSearchEngine _webSearchEngine = WebSearchEngine();
   final Logger _logger = Logger();
 
+  static Future<Directory> getOutputDirectory() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final pptDir = Directory(path.join(directory.path, 'ai_ppt_pro'));
+    if (!await pptDir.exists()) {
+      await pptDir.create(recursive: true);
+    }
+    return pptDir;
+  }
+
   // MARK: - Generate PPT from Text
   Future<PPTResult> generatePPTFromText({
     required String text,
@@ -63,23 +73,20 @@ class PPTGenerationEngine {
     progressHandler?.call(0.15);
 
     // Step 2: Generate outline
-    final outline = await _outlineGenerator.generateOutline(
-      topic: analysis.mainTheme ?? text,
-      depth: 3,
+    final outline = await _outlineGenerator.generateTwoStage(
+      text: text,
+      analysis: analysis,
+      template: styleTemplate,
     );
-    _logger.i('Generated outline: $outline');
+    _logger.i('Generated outline: ${outline.slides.length} slides');
 
     progressHandler?.call(0.25);
 
     // Step 3: Generate slides
     final slides = <GeneratedSlide>[];
-    for (var i = 0; i < outline['points'].length; i++) {
-      final point = outline['points'][i];
-      final content = await GLMClient().generateSlideContent(
-        title: point['title'] ?? point,
-        outline: point.toString(),
-        style: styleTemplate.styleHints.join(', '),
-      );
+    for (var i = 0; i < outline.slides.length; i++) {
+      final slide = outline.slides[i];
+      final content = '幻灯片内容：${slide.title}';
 
       final slideFile = File(
         path.join(
@@ -93,14 +100,14 @@ class PPTGenerationEngine {
       slides.add(
         GeneratedSlide(
           slideNumber: i + 1,
-          title: point['title'] ?? point,
+          title: slide.title,
           fileUrl: slideFile,
           isStyleAnchor: i % 3 == 0,
           generatedAt: DateTime.now(),
         ),
       );
 
-      progressHandler?.call(0.25 + (i / outline['points'].length) * 0.5);
+      progressHandler?.call(0.25 + (i / outline.slides.length) * 0.5);
     }
 
     // Step 4: Generate index
@@ -147,23 +154,28 @@ class PPTGenerationEngine {
     progressHandler?.call(0.15);
 
     // Step 2: Generate outline
-    final outline = await _outlineGenerator.generateOutline(
-      topic: topic,
-      depth: 3,
+    final analysis = DocumentAnalysis(
+      documentType: 'Web Search',
+      mainTheme: topic,
+      targetAudience: '通用',
+      suggestedStructure: 'Introduction, Content, Conclusion',
+      keyPoints: [],
     );
-    _logger.i('Generated outline: $outline');
+
+    final outline = await _outlineGenerator.generateTwoStage(
+      text: topic,
+      analysis: analysis,
+      template: styleTemplate,
+    );
+    _logger.i('Generated outline: ${outline.slides.length} slides');
 
     progressHandler?.call(0.25);
 
     // Step 3: Generate slides
     final slides = <GeneratedSlide>[];
-    for (var i = 0; i < outline['points'].length; i++) {
-      final point = outline['points'][i];
-      final content = await GLMClient().generateSlideContent(
-        title: point['title'] ?? point,
-        outline: point.toString(),
-        style: styleTemplate.styleHints.join(', '),
-      );
+    for (var i = 0; i < outline.slides.length; i++) {
+      final slide = outline.slides[i];
+      final content = '幻灯片内容：${slide.title}';
 
       final slideFile = File(
         path.join(
@@ -177,14 +189,14 @@ class PPTGenerationEngine {
       slides.add(
         GeneratedSlide(
           slideNumber: i + 1,
-          title: point['title'] ?? point,
+          title: slide.title,
           fileUrl: slideFile,
           isStyleAnchor: i % 3 == 0,
           generatedAt: DateTime.now(),
         ),
       );
 
-      progressHandler?.call(0.25 + (i / outline['points'].length) * 0.5);
+      progressHandler?.call(0.25 + (i / outline.slides.length) * 0.5);
     }
 
     // Step 4: Generate index

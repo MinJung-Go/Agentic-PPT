@@ -48,40 +48,13 @@ class WebSearchEngine {
 
     // For now, return mock data
     // In production, integrate with real search API
-    return [
-      SearchResult(
-        title: '$topic - 维基百科',
-        url: 'https://zh.wikipedia.org/wiki/$topic',
-        snippet: '关于 $topic 的详细介绍和背景信息...',
-        date: DateTime.now(),
-      ),
-      SearchResult(
-        title: '$topic 最新研究',
-        url: 'https://example.com/research/$topic',
-        snippet: '最新的 $topic 研究成果和趋势分析...',
-        date: DateTime.now(),
-      ),
-      SearchResult(
-        title: '$topic 行业报告',
-        url: 'https://example.com/industry/$topic',
-        snippet: '关于 $topic 的行业分析和市场趋势...',
-        date: DateTime.now(),
-      ),
-    ];
-  }
 
-  // MARK: - Extract Content from URL
-  Future<String> extractContent(String url) async {
-    // TODO: Implement actual content extraction
-    // Options:
-    // 1. Use readability package
-    // 2. Custom HTML parser
-    // 3. Third-party API
-
-    _logger.i('Extracting content from: $url');
-
-    // For now, return mock content
-    return '从 $url 提取的内容...';
+    return List.generate(maxResults, (index) => SearchResult(
+          title: '搜索结果 ${index + 1}',
+          url: 'https://example.com/result/${index + 1}',
+          snippet: '这是搜索结果 ${index + 1} 的摘要',
+          date: DateTime.now(),
+        ));
   }
 
   // MARK: - Generate Research Report
@@ -90,12 +63,13 @@ class WebSearchEngine {
   }) async {
     _logger.i('Generating research report for: $topic');
 
-    // Step 1: Search for information
+    // Step 1: Perform search
     final searchResults = await performSearch(topic: topic);
+    _logger.i('Found ${searchResults.length} search results');
 
-    // Step 2: Extract content from top results
-    final List<String> contents = [];
-    for (final result in searchResults.take(5)) {
+    // Step 2: Extract content from search results
+    final contents = <String>[];
+    for (final result in searchResults) {
       try {
         final content = await extractContent(result.url);
         contents.add(content);
@@ -108,9 +82,10 @@ class WebSearchEngine {
     final combinedContent = contents.join('\n\n---\n\n');
     final prompt = _buildResearchReportPrompt(topic, combinedContent);
 
-    final report = await _glmClient.generateText(
-      prompt: prompt,
-      model: 'glm-4-flash',
+    final report = await _glmClient.generateSlideContent(
+      title: topic,
+      outline: combinedContent,
+      style: 'Research Report',
     );
 
     return ResearchData(
@@ -119,6 +94,14 @@ class WebSearchEngine {
       content: report,
       generatedAt: DateTime.now(),
     );
+  }
+
+  // MARK: - Extract Content from URL
+  Future<String> extractContent(String url) async {
+    // TODO: Implement web scraping
+    // For now, return mock content
+    await Future.delayed(const Duration(milliseconds: 100));
+    return '这是从 $url 提取的内容';
   }
 
   // MARK: - Build Research Report Prompt
