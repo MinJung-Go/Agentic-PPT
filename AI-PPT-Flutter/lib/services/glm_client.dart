@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
-import '../models/ppt_models.dart';
 
 class GLMClient {
   static final GLMClient _instance = GLMClient._internal();
@@ -15,165 +14,185 @@ class GLMClient {
   void initialize({required String apiKey, String? baseUrl}) {
     _apiKey = apiKey;
     if (baseUrl != null) {
-      _baseUrl = baseUrl;
-    }
-
-    _dio.options.baseUrl = _baseUrl;
-    _dio.options.headers = {
-      'Authorization': 'Bearer $_apiKey',
-      'Content-Type': 'application/json',
-    };
-
-    _logger.i('GLM Client initialized');
-  }
-
-  bool get isInitialized => _apiKey != null && _apiKey!.isNotEmpty;
-
-  // MARK: - Generate Text
-  Future<String> generateText({
-    required String prompt,
-    String model = 'glm-4-flash',
-    double temperature = 0.7,
-    int maxTokens = 2048,
-  }) async {
-    if (!isInitialized) {
-      throw Exception('GLM Client not initialized. Please set API key first.');
-    }
-
-    try {
-      final response = await _dio.post(
-        '/chat/completions',
-        data: {
-          'model': model,
-          'messages': [
-            {'role': 'user', 'content': prompt}
-          ],
-          'temperature': temperature,
-          'max_tokens': maxTokens,
-        },
-      );
-
-      final content = response.data['choices'][0]['message']['content'];
-      return content as String;
-    } on DioException catch (e) {
-      _logger.e('API Error: ${e.message}');
-      throw Exception('Failed to generate text: ${e.message}');
-    } catch (e) {
-      _logger.e('Error: $e');
-      throw Exception('Failed to generate text: $e');
+      _baseUrl = baseUrl!;
     }
   }
 
-  // MARK: - Generate Structured Output
-  Future<T> generateStructured<T>({
-    required String prompt,
-    required Map<String, dynamic> schema,
-    String model = 'glm-4-flash',
-    double temperature = 0.3,
+  Future<Map<String, dynamic>> generateOutline({
+    required String topic,
+    int depth = 3,
+    int sectionsPerLevel = 3,
   }) async {
-    if (!isInitialized) {
-      throw Exception('GLM Client not initialized. Please set API key first.');
+    if (_apiKey == null || _apiKey!.isEmpty) {
+      throw Exception('API Key not initialized');
     }
+
+    final prompt = '''
+    作为一个专业的PPT内容生成助手，请为以下主题生成一个详细的PPT大纲。
+
+    主题：$topic
+
+    要求：
+    1. 大纲深度：$depth 层
+    2. 每层节数：$sectionsPerLevel 个
+    3. 内容要符合PPT展示的逻辑
+    4. 每个部分应该有明确的标题和要点
+    5. 返回JSON格式，包含title和points（要点列表）
+    6. points每个点控制在30字以内
+
+    示例格式：
+    {
+      "title": "介绍",
+      "points": ["要点1", "要点2", "要点3"]
+    }
+    ''';
 
     try {
       final response = await _dio.post(
-        '/chat/completions',
+        '$_baseUrl/chat/completions',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_apiKey',
+            'Content-Type': 'application/json',
+          },
+        ),
         data: {
-          'model': model,
+          'model': 'glm-4',
           'messages': [
             {
               'role': 'user',
-              'content': prompt
+              'content': prompt,
             }
           ],
-          'temperature': temperature,
-          'response_format': {
-            'type': 'json_schema',
-            'json_schema': {
-              'name': 'output',
-              'schema': schema,
-              'strict': true,
-            },
-          },
         },
       );
 
-      final jsonString = response.data['choices'][0]['message']['content'];
-      return _parseJson<T>(jsonString);
-    } on DioException catch (e) {
-      _logger.e('API Error: ${e.message}');
-      throw Exception('Failed to generate structured output: ${e.message}');
-    } catch (e) {
-      _logger.e('Error: $e');
-      throw Exception('Failed to generate structured output: $e');
-    }
-  }
+      _logger.i('GLM API response: ${response.statusCode}');
 
-  // MARK: - Validate API Key
-  Future<bool> validateAPIKey(String apiKey) async {
-    try {
-      final tempClient = GLMClient();
-      tempClient._apiKey = apiKey;
-      tempClient._dio.options.baseUrl = _baseUrl;
-      tempClient._dio.options.headers = {
-        'Authorization': 'Bearer $apiKey',
-        'Content-Type': 'application/json',
+      final content = response.data['choices'][0]['message']['content'];
+
+      // Parse JSON from response
+      final jsonMatch = RegExp(r'\{[\s\S]*\}').firstMatch(content);
+      if (jsonMatch != null) {
+        return jsonDecode(jsonMatch.group(0)!) as Map<String, dynamic>;
+      }
+
+      // Fallback: return basic structure
+      return {
+        'title': topic,
+        'points': [content],
       };
-
-      await tempClient.generateText(prompt: '测试', maxTokens: 10);
-      return true;
     } catch (e) {
-      _logger.w('API Key validation failed: $e');
-      return false;
+      _logger.e('GLM API error: $e');
+      rethrow;
     }
   }
 
-  // MARK: - Parse JSON
-  T _parseJson<T>(String jsonString) {
-    // This is a simplified version. In production, use proper type checking
-    final Map<String, dynamic> json = parseJsonString(jsonString);
+  Future<String> generateSlideContent({
+    required String title,
+    required String outline,
+    String? style,
+  }) async {
+    if (_apiKey == null || _apiKey!.isEmpty) {
+      throw Exception('API Key not initialized');
+    }
 
-    switch (T) {
-      case OutlineData:
-        return OutlineData.fromJson(json) as T;
-      default:
-        throw Exception('Unsupported type: $T');
+    final stylePrompt = style != null ? '\n风格要求：$style' : '';
+
+    final prompt = '''
+    作为一个专业的PPT内容生成助手，请为以下幻灯片生成详细内容。
+
+    标题：$title
+    大纲：$outline
+    $stylePrompt
+
+    要求：
+    1. 内容要简洁明了
+    2. 每页幻灯片控制在100-150字
+    3. 返回纯文本格式
+    4. 适合展示和演讲
+
+    生成内容：
+    ''';
+
+    try {
+      final response = await _dio.post(
+        '$_baseUrl/chat/completions',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_apiKey',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'model': 'glm-4',
+          'messages': [
+            {
+              'role': 'user',
+              'content': prompt,
+            }
+          ],
+        },
+      );
+
+      _logger.i('GLM API response: ${response.statusCode}');
+
+      return response.data['choices'][0]['message']['content'];
+    } catch (e) {
+      _logger.e('GLM API error: $e');
+      rethrow;
     }
   }
 
-  Map<String, dynamic> parseJsonString(String jsonString) {
-    // Use dart:convert
-    return {};
-  }
-}
+  Future<String> generateWebSearchQuery({
+    required String topic,
+    String? context,
+  }) async {
+    if (_apiKey == null || _apiKey!.isEmpty) {
+      throw Exception('API Key not initialized');
+    }
 
-// MARK: - Outline Data
-class OutlineData {
-  final String title;
-  final String subtitle;
-  final List<Map<String, dynamic>> slides;
+    final contextPrompt = context != null ? '\n上下文：$context' : '';
 
-  OutlineData({
-    required this.title,
-    required this.subtitle,
-    required this.slides,
-  });
+    final prompt = '''
+    请根据以下主题，生成一个精准的网页搜索查询。
 
-  factory OutlineData.fromJson(Map<String, dynamic> json) {
-    return OutlineData(
-      title: json['title'] as String,
-      subtitle: json['subtitle'] as String,
-      slides: (json['slides'] as List<dynamic>)
-          .map((e) => e as Map<String, dynamic>)
-          .toList(),
-    );
-  }
+    主题：$topic
+    $contextPrompt
 
-  Map<String, dynamic> toJson() {
-    return {
-      'title': title,
-      'subtitle': subtitle,
-      'slides': slides,
-    };
+    要求：
+    1. 查询要精准，能找到相关信息
+    2. 关键词要相关
+    3. 返回纯文本格式，只返回查询字符串
+    4. 不要添加任何解释
+
+    搜索查询：
+    ''';
+
+    try {
+      final response = await _dio.post(
+        '$_baseUrl/chat/completions',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_apiKey',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'model': 'glm-4',
+          'messages': [
+            {
+              'role': 'user',
+              'content': prompt,
+            }
+          ],
+        },
+      );
+
+      return response.data['choices'][0]['message']['content'].trim();
+    } catch (e) {
+      _logger.e('GLM API error: $e');
+      rethrow;
+    }
   }
 }

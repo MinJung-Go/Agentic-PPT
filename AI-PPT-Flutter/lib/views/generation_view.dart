@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/template_models.dart';
 import '../services/ppt_generation_engine.dart';
 import '../services/user_config_manager.dart';
-import '../models/ppt_models.dart';
 
 final generationProvider = StateNotifierProvider<GenerationNotifier, GenerationState>((ref) {
   return GenerationNotifier();
@@ -59,12 +58,10 @@ class GenerationState {
 
 class GenerationNotifier extends StateNotifier<GenerationState> {
   GenerationNotifier() : super(GenerationState()) {
-    _init();
-  }
-
-  void _init() {
-    final templates = TemplateManager.templates;
-    state = state.copyWith(selectedTemplate: templates.first);
+    // Select first template by default
+    if (TemplateManager.templates.isNotEmpty) {
+      state = state.copyWith(selectedTemplate: TemplateManager.templates.first);
+    }
   }
 
   void setMode(int mode) {
@@ -84,35 +81,30 @@ class GenerationNotifier extends StateNotifier<GenerationState> {
   }
 
   Future<void> generatePPT() async {
-    final configManager = UserConfigManager();
-    if (configManager.config.apiKey.isEmpty) {
-      state = state.copyWith(errorMessage: '请先配置 API Key');
-      return;
-    }
-
-    final template = state.selectedTemplate;
-    if (template == null) {
-      state = state.copyWith(errorMessage: '请选择模板');
-      return;
-    }
-
     state = state.copyWith(
       isGenerating: true,
       progress: 0.0,
-      currentStep: '开始生成...',
+      currentStep: '准备中...',
       errorMessage: null,
     );
 
     try {
       final engine = PPTGenerationEngine();
       final outputDir = await PPTGenerationEngine.getOutputDirectory();
+      final configManager = UserConfigManager();
+      final config = configManager.config;
 
       PPTResult result;
+
       if (state.selectedMode == 0) {
-        // Generate from text
+        // Text mode
+        if (state.inputText.isEmpty) {
+          throw Exception('请输入 PPT 文案');
+        }
+
         result = await engine.generatePPTFromText(
           text: state.inputText,
-          styleTemplate: template,
+          styleTemplate: state.selectedTemplate!,
           outputDir: outputDir,
           progressHandler: (progress) {
             state = state.copyWith(
@@ -122,10 +114,14 @@ class GenerationNotifier extends StateNotifier<GenerationState> {
           },
         );
       } else {
-        // Generate from topic
-        result = await engine.generatePPTFromTopic(
+        // Web search mode
+        if (state.topic.isEmpty) {
+          throw Exception('请输入主题');
+        }
+
+        result = await engine.generatePPTFromWebSearch(
           topic: state.topic,
-          styleTemplate: template,
+          styleTemplate: state.selectedTemplate!,
           outputDir: outputDir,
           progressHandler: (progress) {
             state = state.copyWith(
@@ -139,26 +135,21 @@ class GenerationNotifier extends StateNotifier<GenerationState> {
       state = state.copyWith(
         isGenerating: false,
         progress: 1.0,
-        currentStep: '生成完成！',
+        currentStep: '完成',
         generationResult: result,
       );
     } catch (e) {
       state = state.copyWith(
         isGenerating: false,
-        errorMessage: '生成失败: $e',
+        progress: 0.0,
+        currentStep: '失败',
+        errorMessage: e.toString(),
       );
     }
   }
 
-  void reset() {
-    state = state.copyWith(
-      inputText: '',
-      topic: '',
-      progress: 0.0,
-      currentStep: '',
-      generationResult: null,
-      errorMessage: null,
-    );
+  void resetError() {
+    state = state.copyWith(errorMessage: null);
   }
 }
 
@@ -174,181 +165,293 @@ class GenerationView extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('生成 PPT'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Mode Selection
-            SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(
-                  value: 0,
-                  label: Text('文案生成'),
-                  icon: Icon(Icons.description),
+      body: Column(
+        children: [
+          // Mode selector
+          _buildModeSelector(state, notifier),
+          const Divider(height: 1),
+
+          // Input area
+          Expanded(
+            child: _buildInputArea(state, notifier),
+          ),
+
+          // Bottom action
+          _buildBottomAction(state, notifier, context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeSelector(GenerationState state, GenerationNotifier notifier) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: () => notifier.setMode(0),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: state.selectedMode == 0
+                      ? Colors.blue.shade50
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: state.selectedMode == 0
+                        ? Colors.blue
+                        : Colors.grey.shade300,
+                  ),
                 ),
-                ButtonSegment(
-                  value: 1,
-                  label: Text('研报生成'),
-                  icon: Icon(Icons.search),
+                child: Text(
+                  '文案模式',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: state.selectedMode == 0
+                        ? Colors.blue.shade700
+                        : Colors.grey.shade600,
+                    fontWeight: state.selectedMode == 0
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: InkWell(
+              onTap: () => notifier.setMode(1),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: state.selectedMode == 1
+                      ? Colors.blue.shade50
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: state.selectedMode == 1
+                        ? Colors.blue
+                        : Colors.grey.shade300,
+                  ),
+                ),
+                child: Text(
+                  '搜索模式',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: state.selectedMode == 1
+                        ? Colors.blue.shade700
+                        : Colors.grey.shade600,
+                    fontWeight: state.selectedMode == 1
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputArea(GenerationState state, GenerationNotifier notifier) {
+    if (state.selectedMode == 0) {
+      // Text mode
+      return Container(
+        padding: const EdgeInsets.all(16),
+        child: TextField(
+          maxLines: null,
+          minLines: 10,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: '请输入 PPT 文案',
+          ),
+          onChanged: (value) => notifier.setInputText(value),
+        ),
+      );
+    } else {
+      // Web search mode
+      return Container(
+        padding: const EdgeInsets.all(16),
+        child: TextField(
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: '请输入主题',
+            hintText: '例如：人工智能发展趋势',
+          ),
+          onChanged: (value) => notifier.setTopic(value),
+        ),
+      );
+    }
+  }
+
+  Widget _buildBottomAction(
+    GenerationState state,
+    GenerationNotifier notifier,
+    BuildContext context,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        border: Border(top: BorderSide(color: Colors.grey.shade300)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Template selector
+          _TemplateSelector(
+            selectedTemplate: state.selectedTemplate,
+            onTemplateSelected: (template) =>
+                notifier.setSelectedTemplate(template),
+          ),
+          const SizedBox(height: 16),
+
+          // Progress indicator
+          if (state.isGenerating)
+            Column(
+              children: [
+                LinearProgressIndicator(value: state.progress),
+                const SizedBox(height: 8),
+                Text(
+                  state.currentStep,
+                  style: const TextStyle(fontSize: 12),
                 ),
               ],
-              selected: {state.selectedMode},
-              onSelectionChanged: (Set<int> newSelection) {
-                notifier.setMode(newSelection.first);
-              },
             ),
-            const SizedBox(height: 24),
 
-            // Input Area
-            if (state.selectedMode == 0) ...[
-              TextField(
-                maxLines: 10,
-                decoration: const InputDecoration(
-                  labelText: '请输入 PPT 文案',
-                  hintText: '在这里输入你的文案...',
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: notifier.setInputText,
+          // Error message
+          if (state.errorMessage != null)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(8),
               ),
-            ] else ...[
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: '请输入研究主题',
-                  hintText: '例如：AI技术发展趋势',
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: notifier.setTopic,
-              ),
-            ],
-            const SizedBox(height: 24),
-
-            // Template Preview
-            if (state.selectedTemplate != null)
-              _TemplatePreviewCard(
-                template: state.selectedTemplate!,
-              ),
-            const SizedBox(height: 24),
-
-            // Generation Button
-            if (state.isGenerating) ...[
-              const LinearProgressIndicator(),
-              const SizedBox(height: 8),
-              Text(
-                state.currentStep,
-                style: Theme.of(context).textTheme.bodySmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-            ] else if (state.generationResult != null) ...[
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => PPTResultView(
-                        result: state.generationResult!,
-                      ),
+              child: Row(
+                children: [
+                  Icon(Icons.error, color: Colors.red.shade700, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      state.errorMessage!,
+                      style: TextStyle(color: Colors.red.shade700),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.visibility),
-                label: const Text('查看结果'),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 16),
+                    onPressed: () => notifier.resetError(),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: notifier.reset,
-                icon: const Icon(Icons.refresh),
-                label: const Text('重新生成'),
-              ),
-            ] else
-              ElevatedButton.icon(
-                onPressed: state.selectedTemplate == null
-                    ? null
-                    : () => notifier.generatePPT(),
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('生成 PPT'),
-              ),
+            ),
 
-            if (state.errorMessage != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.shade300),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.error_outline, color: Colors.red.shade700),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        state.errorMessage!,
-                        style: TextStyle(color: Colors.red.shade700),
-                      ),
-                    ),
-                  ],
-                ),
+          // Generate button
+          if (!state.isGenerating)
+            ElevatedButton(
+              onPressed: () => notifier.generatePPT(),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-            ],
-          ],
-        ),
+              child: const Text('生成 PPT'),
+            ),
+
+          // Result view
+          if (state.generationResult != null && !state.isGenerating)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: PPTResultView(result: state.generationResult!),
+            ),
+        ],
       ),
     );
   }
 }
 
-class _TemplatePreviewCard extends StatelessWidget {
-  final PPTTemplate template;
+class _TemplateSelector extends StatelessWidget {
+  final PPTTemplate? selectedTemplate;
+  final Function(PPTTemplate) onTemplateSelected;
 
-  const _TemplatePreviewCard({required this.template});
+  const _TemplateSelector({
+    super.key,
+    required this.selectedTemplate,
+    required this.onTemplateSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: template.previewColors.take(4).map((color) {
-                return Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: _parseColor(color),
-                    shape: BoxShape.circle,
-                  ),
-                );
-              }).toList(),
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          // Selected template preview
+          Expanded(
+            child: InkWell(
+              onTap: () {
+                if (selectedTemplate != null) {
+                  onTemplateSelected(selectedTemplate!);
+                }
+              },
+              child: Container(
+                height: 60,
+                decoration: BoxDecoration(
+                  color: selectedTemplate?.previewColors.isNotEmpty ?? false
+                      ? Color(int.parse(selectedTemplate!.previewColors.first
+                              .replaceAll('#', 'FF')))
+                      : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: selectedTemplate != null
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            selectedTemplate!.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.check_circle,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ],
+                      )
+                    : const Center(
+                        child: Text(
+                          '请选择模板',
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      ),
+              ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              template.name,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              template.description,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 16),
+          // Browse templates button
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const TemplateGalleryView(),
+                ),
+              );
+            },
+            child: const Text('浏览模板'),
+          ),
+        ],
       ),
     );
-  }
-
-  Color _parseColor(String hexColor) {
-    final hex = hexColor.replaceAll('#', '');
-    final colorInt = int.parse('FF$hex', radix: 16);
-    return Color(colorInt);
   }
 }
 
@@ -360,70 +463,49 @@ class PPTResultView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('生成结果'),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        border: Border.all(color: Colors.green.shade300),
+        borderRadius: BorderRadius.circular(8),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: result.slides.length,
-        itemBuilder: (context, index) {
-          final slide = result.slides[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: ListTile(
-              leading: CircleAvatar(
-                child: Text('${slide.slideNumber}'),
-              ),
-              title: Text(slide.title),
-              subtitle: Text(
-                slide.isStyleAnchor ? '风格锚定页' : '普通页面',
-                style: TextStyle(
-                  color: slide.isStyleAnchor ? Colors.blue : Colors.grey[600],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green.shade700),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'PPT 生成成功！',
+                  style: TextStyle(
+                    color: Colors.green.shade700,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => SlideDetailView(slide: slide),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class SlideDetailView extends StatelessWidget {
-  final GeneratedSlide slide;
-
-  const SlideDetailView({super.key, required this.slide});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('幻灯片 #${slide.slideNumber}'),
-      ),
-      body: FutureBuilder<String>(
-        future: slide.fileUrl.readAsString(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              snapshot.data!,
-              style: const TextStyle(fontFamily: 'monospace'),
-            ),
-          );
-        },
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '标题：${result.title}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text('模板：${result.templateUsed}'),
+          const SizedBox(height: 4),
+          Text('幻灯片数：${result.totalSlides}'),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () {
+              // TODO: Implement sharing/export
+            },
+            icon: const Icon(Icons.share),
+            label: const Text('分享'),
+          ),
+        ],
       ),
     );
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import '../models/user_config.dart';
 import '../services/user_config_manager.dart';
 
@@ -78,10 +77,43 @@ class SettingsView extends ConsumerWidget {
           // Storage
           _buildSectionHeader('存储管理'),
           ListTile(
-            title: const Text('清除缓存'),
-            subtitle: const Text('释放存储空间'),
+            title: const Text('缓存大小'),
+            subtitle: const Text('查看和管理缓存'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showClearCacheDialog(context),
+            onTap: () {
+              // TODO: Implement cache management
+            },
+          ),
+          ListTile(
+            title: const Text('清除缓存'),
+            subtitle: const Text('删除所有缓存数据'),
+            trailing: const Icon(Icons.delete_outline),
+            onTap: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('确认清除'),
+                  content: const Text('确定要清除所有缓存吗？'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('取消'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('清除'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirmed == true) {
+                configManager.clearConfig();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('缓存已清除')),
+                );
+              }
+            },
           ),
           const Divider(height: 1),
 
@@ -90,20 +122,7 @@ class SettingsView extends ConsumerWidget {
           ListTile(
             title: const Text('版本'),
             subtitle: const Text('1.0.0'),
-          ),
-          ListTile(
-            title: const Text('用户协议'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // TODO: Open user agreement
-            },
-          ),
-          ListTile(
-            title: const Text('隐私政策'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // TODO: Open privacy policy
-            },
+            trailing: const Icon(Icons.info_outline),
           ),
         ],
       ),
@@ -112,41 +131,14 @@ class SettingsView extends ConsumerWidget {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.grey,
+          color: Colors.grey.shade600,
         ),
-      ),
-    );
-  }
-
-  void _showClearCacheDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('清除缓存'),
-        content: const Text('确定要清除所有缓存吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () {
-              // TODO: Implement cache clearing
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('缓存已清除')),
-              );
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('清除'),
-          ),
-        ],
       ),
     );
   }
@@ -161,17 +153,16 @@ class APIConfigView extends StatefulWidget {
 }
 
 class _APIConfigViewState extends State<APIConfigView> {
-  late TextEditingController _apiKeyController;
-  late TextEditingController _baseUrlController;
-  bool _isValidating = false;
+  final TextEditingController _apiKeyController = TextEditingController();
+  final TextEditingController _baseUrlController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     final configManager = UserConfigManager();
     final config = configManager.config;
-    _apiKeyController = TextEditingController(text: config.apiKey);
-    _baseUrlController = TextEditingController(text: config.baseUrl);
+    _apiKeyController.text = config.apiKey;
+    _baseUrlController.text = config.baseUrl;
   }
 
   @override
@@ -181,91 +172,52 @@ class _APIConfigViewState extends State<APIConfigView> {
     super.dispose();
   }
 
-  Future<void> _saveConfig() async {
-    setState(() {
-      _isValidating = true;
-    });
-
-    final apiKey = _apiKeyController.text.trim();
-    final baseUrl = _baseUrlController.text.trim();
-
-    final isValid = await UserConfigManager().validateAPIKey(apiKey);
-
-    if (isValid) {
-      await UserConfigManager().saveConfig(UserConfig(
-        apiKey: apiKey,
-        baseUrl: baseUrl,
-        cacheEnabled: UserConfigManager().config.cacheEnabled,
-        autoSaveEnabled: UserConfigManager().config.autoSaveEnabled,
-        theme: UserConfigManager().config.theme,
-        maxCacheSize: UserConfigManager().config.maxCacheSize,
-      ));
-
-      if (mounted) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('配置已保存')),
-        );
-      }
-    } else {
-      setState(() {
-        _isValidating = false;
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('API Key 无效')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('API 配置'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _apiKeyController,
-              decoration: const InputDecoration(
-                labelText: 'API Key',
-                hintText: '请输入 GLM API Key',
-                border: OutlineInputBorder(),
-              ),
-              obscureText: true,
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          TextField(
+            controller: _apiKeyController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'API Key',
+              hintText: '输入您的 API Key',
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _baseUrlController,
-              decoration: const InputDecoration(
-                labelText: 'Base URL (可选)',
-                hintText: 'https://open.bigmodel.cn/api/paas/v4',
-                border: OutlineInputBorder(),
-              ),
+            obscureText: true,
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _baseUrlController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Base URL',
+              hintText: 'https://open.bigmodel.cn/api/paas/v4',
             ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isValidating || _apiKeyController.text.isEmpty
-                    ? null
-                    : _saveConfig,
-                child: _isValidating
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('保存'),
-              ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () async {
+              final configManager = UserConfigManager();
+              await configManager.updateAPIKey(_apiKeyController.text);
+              await configManager.updateBaseUrl(_baseUrlController.text);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('配置已保存')),
+                );
+                Navigator.of(context).pop();
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-          ],
-        ),
+            child: const Text('保存'),
+          ),
+        ],
       ),
     );
   }
@@ -291,15 +243,21 @@ class _ThemeSelectionViewState extends State<ThemeSelectionView> {
       ),
       body: ListView(
         children: AppTheme.values.map((theme) {
-          return RadioListTile<AppTheme>(
+          return ListTile(
             title: Text(theme.displayName),
-            value: theme,
-            groupValue: currentTheme,
-            onChanged: (value) {
-              if (value != null) {
-                configManager.updateTheme(value);
-                setState(() {});
-              }
+            leading: Radio<AppTheme>(
+              value: theme,
+              groupValue: currentTheme,
+              onChanged: (value) {
+                if (value != null) {
+                  configManager.updateTheme(value);
+                  setState(() {});
+                }
+              },
+            ),
+            onTap: () {
+              configManager.updateTheme(theme);
+              setState(() {});
             },
           );
         }).toList(),
