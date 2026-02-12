@@ -4,6 +4,7 @@ import 'services/hive_adapters.dart';
 import 'services/user_config_manager.dart';
 import 'services/glm_client.dart';
 import 'views/main_view.dart';
+import 'models/user_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,9 +39,9 @@ class MyApp extends ConsumerWidget {
     final configManager = UserConfigManager();
     final config = configManager.config;
 
-    final themeMode = config.theme.name == 'system'
+    final themeMode = config.theme == AppTheme.system
         ? ThemeMode.system
-        : config.theme.name == 'dark'
+        : config.theme == AppTheme.dark
             ? ThemeMode.dark
             : ThemeMode.light;
 
