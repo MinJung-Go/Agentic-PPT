@@ -9,7 +9,7 @@ on:
     branches:
       - flutter-apk
       - main
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          path: '.'
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -34,15 +36,15 @@ jobs:
         run: flutter --version
 
       - name: Install dependencies
-        working-directory: ./AI-PPT-Flutter
+        working-directory: AI-PPT-Flutter
         run: flutter pub get
 
       - name: Generate code
-        working-directory: ./AI-PPT-Flutter
+        working-directory: AI-PPT-Flutter
         run: flutter pub run build_runner build --delete-conflicting-outputs
 
       - name: Build APK (Release)
-        working-directory: ./AI-PPT-Flutter
+        working-directory: AI-PPT-Flutter
         run: flutter build apk --release
 
       - name: Upload APK
@@ -53,7 +55,7 @@ jobs:
           retention-days: 30
 
       - name: Get APK info
-        working-directory: ./AI-PPT-Flutter
+        working-directory: AI-PPT-Flutter
         run: |
           APK_SIZE=$(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1)
           echo "APK Size: $APK_SIZE"
