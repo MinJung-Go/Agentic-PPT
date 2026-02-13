@@ -241,26 +241,28 @@ class _ThemeSelectionViewState extends State<ThemeSelectionView> {
       appBar: AppBar(
         title: const Text('主题'),
       ),
-      body: ListView(
-        children: AppTheme.values.map((theme) {
-          return ListTile(
-            title: Text(theme.displayName),
-            leading: Radio<AppTheme>(
-              value: theme,
-              groupValue: currentTheme,
-              onChanged: (value) {
-                if (value != null) {
-                  configManager.updateTheme(value);
-                  setState(() {});
-                }
+      body: RadioGroup<AppTheme>(
+        value: currentTheme,
+        onChanged: (value) {
+          if (value != null) {
+            configManager.updateTheme(value);
+            setState(() {});
+          }
+        },
+        child: ListView(
+          children: AppTheme.values.map((theme) {
+            return ListTile(
+              title: Text(theme.displayName),
+              leading: Radio<AppTheme>(
+                value: theme,
+              ),
+              onTap: () {
+                configManager.updateTheme(theme);
+                setState(() {});
               },
-            ),
-            onTap: () {
-              configManager.updateTheme(theme);
-              setState(() {});
-            },
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

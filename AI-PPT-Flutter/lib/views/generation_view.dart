@@ -375,7 +375,6 @@ class _TemplateSelector extends StatelessWidget {
   final Function(PPTTemplate) onTemplateSelected;
 
   const _TemplateSelector({
-    super.key,
     required this.selectedTemplate,
     required this.onTemplateSelected,
   });
