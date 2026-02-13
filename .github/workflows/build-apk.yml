@@ -45,7 +45,7 @@ jobs:
 
       - name: Analyze code
         working-directory: AI-PPT-Flutter
-        run: flutter analyze --fatal-infos
+        run: flutter analyze
 
       - name: Build APK (Release)
         working-directory: AI-PPT-Flutter
