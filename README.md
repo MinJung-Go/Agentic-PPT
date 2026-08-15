@@ -150,14 +150,12 @@ print(f"成功 {result['success_slides']}/{result['total_slides']} 页")
 
 | 变量 | 必填 | 说明 |
 |------|:----:|------|
-| `DEEPSEEK_API_KEY` | 三选一 | DeepSeek API 密钥（推荐） |
-| `OPENAI_API_KEY` | 三选一 | OpenAI API 密钥 |
-| `ANTHROPIC_API_KEY` | 三选一 | Claude API 密钥 |
+| `DEEPSEEK_API_KEY` | 三选一 | DeepSeek API 密钥（由 `example.py` 读取，推荐） |
+| `OPENAI_API_KEY` | 三选一 | OpenAI API 密钥（由统一客户端读取） |
+| `ANTHROPIC_API_KEY` | 三选一 | Claude API 密钥（由统一客户端读取） |
 | `GEMINI_API_KEY` | 是 | Gemini API 密钥（图片生成必需），获取地址：https://aistudio.google.com/app/apikey |
-| `GEMINI_IMAGE_MODEL` | 否 | 图片模型，可选 `gemini-3-pro-image-preview`（默认，高质量支持 4K）或 `gemini-2.5-flash-image`（快速、性价比高） |
-| `DEEPSEEK_BASE_URL` / `OPENAI_BASE_URL` | 否 | 自定义 API 端点 |
-| `CACHE_DIR` | 否 | 缓存目录（默认 `.cache/ppt_generator`） |
-| `LOG_LEVEL` | 否 | 日志级别（默认 `INFO`） |
+
+> `.env.example` 中还包含 `GEMINI_IMAGE_MODEL`、`CACHE_DIR`、`LOG_LEVEL` 等预留项，当前版本尚未在代码中读取，请勿依赖。
 
 ### LLM 提供商切换
 
@@ -327,7 +325,7 @@ reload_templates()
 | `total_slides` / `success_slides` | 总页数 / 成功页数 |
 | `error_slides` | 失败页面列表（失败页会以红色错误占位页写入 PPT） |
 | `generation_info` | 生成模式信息（两阶段 / 风格锚定 / 缓存命中） |
-| `cache_hits` | 图片缓存命中数 |
+| `cache_hits` | 图片缓存命中数（有命中时返回） |
 
 ---
 
@@ -335,7 +333,7 @@ reload_templates()
 
 幻灯片图片由 Google Gemini 生成（[ppt_generator/slide_generator_official.py](ppt_generator/slide_generator_official.py)）：
 
-- **模型**：默认 `gemini-3-pro-image-preview`（Nano Banana Pro，高质量、支持 4K），可通过 `GEMINI_IMAGE_MODEL` 切换为 `gemini-2.5-flash-image`（Nano Banana，快速、性价比高）；
+- **模型**：默认 `gemini-3-pro-image-preview`（Nano Banana Pro，高质量、支持 4K）；可通过 `ImageGenerationTool(api_key=..., model=...)` 参数切换为 `gemini-2.5-flash-image`（Nano Banana，快速、性价比高）；
 - **规格**：16:9 宽高比，`2K` 分辨率（Pro 模型支持 `4K`）；
 - **Prompt 工程**：内置专业 Prompt 模板，确保布局合理、中文渲染清晰、页码位置统一；
 - **容错**：单页最多重试 3 次，指数退避；失败页面自动降级为错误占位页，不影响整体产出。
@@ -390,7 +388,7 @@ Agentic-PPT/
 <details>
 <summary><b>Q: 生成成本如何控制？</b></summary>
 
-**A:** 三个手段：一是大纲与图片缓存，相同内容重复生成零 API 成本；二是 `GEMINI_IMAGE_MODEL` 切换为快速模型；三是使用 `max_concurrent` 控制并发，避免限流重试。
+**A:** 三个手段：一是大纲与图片缓存，相同内容重复生成零 API 成本；二是通过 `ImageGenerationTool` 的 `model` 参数切换为快速模型 `gemini-2.5-flash-image`；三是使用 `max_concurrent` 控制并发，避免限流重试。
 </details>
 
 <details>
@@ -411,8 +409,9 @@ Agentic-PPT/
 
 - [x] 更多模板预设 - ins 风、小红书风、学术论文风等（共 23 种）
 - [x] 自定义模板 - 支持用户通过 YAML 定义自己的模板
-- [x] 智能缓存与增量更新
+- [x] 智能缓存 - 大纲与图片缓存，重复生成零成本
 - [x] 智能错误处理与多级降级
+- [ ] 增量更新 - 只重新生成内容发生变化的页面（能力已就绪，待接入生成流水线）
 - [ ] 参考图片风格生成 - 上传参考图片，AI 提取并生成相似风格
 - [ ] 实时预览 - 生成过程中实时预览效果
 - [ ] 多语言支持 - 英文、日文等多语言优化
