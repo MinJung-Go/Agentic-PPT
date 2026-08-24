@@ -422,6 +422,17 @@ Agentic-PPT/
 
 ---
 
+## 致谢
+
+- [NotebookLM](https://notebooklm.google.com/) — 两阶段大纲生成理念
+- [Nano Banana Pro](https://ai.google.dev/) — 风格锚定批量生成理念
+- [Google Gemini API](https://aistudio.google.com/) — 幻灯片图片生成
+- [python-pptx](https://python-pptx.readthedocs.io/) — PPT 文件合成
+- [Pydantic](https://docs.pydantic.dev/) — 参数验证
+- [DeepSeek](https://www.deepseek.com/) — 默认 LLM 服务商
+
+---
+
 ## 贡献
 
 欢迎各种形式的贡献！包括但不限于：
@@ -442,26 +453,3 @@ Agentic-PPT/
 ## 许可证
 
 本项目采用 [Apache License 2.0](LICENSE) 开源。
-
----
-
-## 致谢
-
-- [NotebookLM](https://notebooklm.google.com/) — 两阶段大纲生成理念
-- [Nano Banana Pro](https://ai.google.dev/) — 风格锚定批量生成理念
-- [Google Gemini API](https://aistudio.google.com/) — 幻灯片图片生成
-- [python-pptx](https://python-pptx.readthedocs.io/) — PPT 文件合成
-- [Pydantic](https://docs.pydantic.dev/) — 参数验证
-- [DeepSeek](https://www.deepseek.com/) — 默认 LLM 服务商
-
----
-
-<div align="center">
-
-**如果这个项目对你有帮助，欢迎给个 Star！**
-
-如有问题或建议，欢迎提交 [Issue](https://github.com/MinJung-Go/Agentic-PPT/issues)
-
-Made by [MinJung-Go](https://github.com/MinJung-Go)
-
-</div>
