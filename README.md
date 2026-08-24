@@ -1,16 +1,16 @@
-# Agentic-PPT
-
 <div align="center">
 
-**文本 → 专业级 PPT 的智能演示文稿 Agent**
-
-基于 LLM 大纲生成 + Gemini 图像渲染，把一段参考文本快速转化为逻辑清晰、视觉统一的 PowerPoint。适用于商业路演、学术报告、产品发布等各种场景。
+<h1>Agentic-PPT</h1>
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![LLM](https://img.shields.io/badge/LLM-DeepSeek%20%7C%20OpenAI%20%7C%20Claude-412991)](https://platform.openai.com/docs/api-reference)
 [![Image](https://img.shields.io/badge/Image-Gemini-4285F4?logo=google&logoColor=white)](https://aistudio.google.com/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg)](#贡献)
+
+**文本 → PowerPoint 的智能演示文稿生成 Agent**
+
+基于 LLM 大纲生成和 Gemini 图像渲染，将参考文本转化为结构化大纲、幻灯片图片和 PowerPoint 文件。
 
 [项目简介](#项目简介) • [工作流程](#工作流程) • [核心特性](#核心特性) • [快速开始](#快速开始) • [配置说明](#配置说明) • [模板预设](#模板预设) • [自定义模板](#自定义模板) • [高级用法](#高级用法) • [常见问题](#常见问题) • [路线图](#路线图)
 
@@ -22,8 +22,8 @@
 
 **Agentic-PPT**（v2.0.0）是一个智能 PPT 生成 Agent。你提供一段参考文本和风格要求，它自动完成从内容理解到成品演示文稿的全流程：
 
-1. **理解** — 借鉴 NotebookLM 的两阶段理念，先深度分析文档结构，再生成精准大纲；
-2. **设计** — 借鉴 Nano Banana Pro 的风格锚定理念，先由首页确定整体视觉风格，后续页面严格保持一致；
+1. **理解** — 借鉴 NotebookLM 的两阶段理念，先分析文档结构，再生成大纲；
+2. **设计** — 借鉴 Nano Banana Pro 的风格锚定理念，先由首页确定整体视觉方向，后续页面复用风格提示以提高一致性；
 3. **合成** — 将生成的幻灯片图片组装为 16:9 的 `.pptx` 文件，同时输出结构化大纲 JSON。
 
 > **关于图像生成后端**：本项目内部版本使用 Nano Banana Pro 服务（自有平台接入），因无法公开，开源版本改用 **Google Gemini 官方 API** 实现相同接口（[ppt_generator/slide_generator_official.py](ppt_generator/slide_generator_official.py)）。开源版本仍在持续打磨，生成效果如有波动，欢迎社区一起改进。
@@ -67,13 +67,13 @@ flowchart LR
 | 特性 | 说明 |
 |------|------|
 | **两阶段大纲生成** | 先分析文档结构，再生成大纲，逻辑更贴合原文（失败自动降级为单阶段） |
-| **风格锚定批量生成** | 首页确定视觉风格，后续页面严格锚定，全篇视觉统一 |
+| **风格锚定批量生成** | 首页确定视觉方向，后续页面复用风格提示以提高全篇一致性 |
 | **智能错误处理** | 内容策略违规自动替换敏感词、超时简化 Prompt、限流指数退避，多级降级策略 |
-| **智能缓存机制** | 大纲与图片双缓存，相同内容重复生成零成本 |
+| **智能缓存机制** | 缓存大纲与图片结果，命中缓存时可减少重复模型请求；实际成本取决于缓存状态和服务商计费 |
 | **23 种模板预设** | 从商务到时尚，一键切换风格 |
 | **自定义模板** | 通过 YAML 文件轻松创建自己的模板，无需改代码 |
 | **多提供商 LLM** | DeepSeek / OpenAI / Claude 任意切换，兼容 OpenAI 协议的自定义端点 |
-| **中文渲染优化** | 针对中文排版的专业 Prompt 工程，避免乱码与模糊 |
+| **中文渲染优化** | 针对中文排版调整 Prompt，降低乱码与模糊的出现概率 |
 
 ---
 
@@ -335,7 +335,7 @@ reload_templates()
 
 - **模型**：默认 `gemini-3-pro-image-preview`（Nano Banana Pro，高质量、支持 4K）；可通过 `ImageGenerationTool(api_key=..., model=...)` 参数切换为 `gemini-2.5-flash-image`（Nano Banana，快速、性价比高）；
 - **规格**：16:9 宽高比，`2K` 分辨率（Pro 模型支持 `4K`）；
-- **Prompt 工程**：内置专业 Prompt 模板，确保布局合理、中文渲染清晰、页码位置统一；
+- **Prompt 工程**：内置面向布局、中文渲染和页码位置的 Prompt 模板；模型输出仍可能需要人工检查或重试；
 - **容错**：单页最多重试 3 次，指数退避；失败页面自动降级为错误占位页，不影响整体产出。
 
 ---
@@ -409,7 +409,7 @@ Agentic-PPT/
 
 - [x] 更多模板预设 - ins 风、小红书风、学术论文风等（共 23 种）
 - [x] 自定义模板 - 支持用户通过 YAML 定义自己的模板
-- [x] 智能缓存 - 大纲与图片缓存，重复生成零成本
+- [x] 智能缓存 - 大纲与图片缓存，命中时减少重复模型请求
 - [x] 智能错误处理与多级降级
 - [ ] 增量更新 - 只重新生成内容发生变化的页面（能力已就绪，待接入生成流水线）
 - [ ] 参考图片风格生成 - 上传参考图片，AI 提取并生成相似风格
